@@ -1,0 +1,10 @@
+*.pyc
+*.spec.bak
+.env
+.pytest_cache/
+.ruff_cache/
+.venv/
+__pycache__/
+build/
+dist/
+output/
