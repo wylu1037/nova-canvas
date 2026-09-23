@@ -35,7 +35,7 @@ class _MainDrop(QLabel):
     clicked = Signal()
 
     def __init__(self) -> None:
-        super().__init__("拖拽 / 点击上传主编辑图")
+        super().__init__("拖拽图片到此处\n或点击选择本地文件")
         self.setAcceptDrops(True)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setMinimumSize(220, 160)
@@ -72,6 +72,10 @@ class ImageDropZone(QGroupBox):
         self.main_drop.clicked.connect(self._pick_main)
         lay.addWidget(self.main_drop)
 
+        self.browse_btn = QPushButton("📁 选择本地图片…")
+        self.browse_btn.clicked.connect(self._pick_main)
+        lay.addWidget(self.browse_btn)
+
         url_row = QHBoxLayout()
         self.url_edit = QLineEdit()
         self.url_edit.setPlaceholderText("或粘贴公网图片 URL (http/https)")
@@ -104,6 +108,7 @@ class ImageDropZone(QGroupBox):
         tip.setStyleSheet("color: gray; font-size: 11px")
         tip.setWordWrap(True)
         lay.addWidget(tip)
+        lay.addStretch()  # 内容靠上，不随面板高度拉散
 
     # ---- 主图 -------------------------------------------------------------------
 

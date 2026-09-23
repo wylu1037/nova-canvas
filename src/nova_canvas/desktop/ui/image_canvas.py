@@ -2,7 +2,7 @@
 from pathlib import Path
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QPainter, QPixmap, QWheelEvent
+from PySide6.QtGui import QColor, QPainter, QPixmap, QWheelEvent
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -10,7 +10,6 @@ from PySide6.QtWidgets import (
     QGraphicsScene,
     QGraphicsView,
     QHBoxLayout,
-    QLabel,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -24,7 +23,20 @@ class _View(QGraphicsView):
             QPainter.RenderHint.Antialiasing | QPainter.RenderHint.SmoothPixmapTransform)
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
-        self.setBackgroundBrush(Qt.GlobalColor.darkGray)
+
+    def drawBackground(self, painter: QPainter, _rect) -> None:
+        """点阵网格背景；在视口坐标绘制，点距不随缩放变化。"""
+        painter.save()
+        painter.resetTransform()
+        vp = self.viewport().rect()
+        painter.fillRect(vp, QColor("#1e1e1e"))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QColor(255, 255, 255, 40))
+        step, r = 24, 1.5
+        for x in range(0, vp.width() + step, step):
+            for y in range(0, vp.height() + step, step):
+                painter.drawEllipse(x - r, y - r, 2 * r, 2 * r)
+        painter.restore()
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         factor = 1.15 if event.angleDelta().y() > 0 else 1 / 1.15
@@ -43,14 +55,9 @@ class ImageCanvas(QWidget):
         self.view = _View()
         self.view.setScene(self._scene)
 
-        self.placeholder = QLabel("结果预览画布\n生成或编辑完成后在此显示")
-        self.placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.placeholder.setStyleSheet("color: #bbb; font-size: 15px")
-
         lay = QVBoxLayout(self)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.addWidget(self.view, 1)
-        self._scene.addWidget(self.placeholder)
 
         bar = QHBoxLayout()
         self.fit_btn = QPushButton("适应窗口")

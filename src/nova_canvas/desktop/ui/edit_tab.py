@@ -17,7 +17,8 @@ class EditTab(QWidget):
         self.dropzone.changed.connect(lambda: self.panel.set_external_ok(self.dropzone.has_main))
         self.panel.submitted.connect(self._on_submit)
         lay = QHBoxLayout(self)
-        lay.setContentsMargins(0, 0, 0, 0)
+        lay.setContentsMargins(8, 8, 8, 8)
+        lay.setSpacing(8)
         lay.addWidget(self.dropzone, 1)
         lay.addWidget(self.panel, 1)
         self._model = ""

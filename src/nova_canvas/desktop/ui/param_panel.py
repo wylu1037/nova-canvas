@@ -73,10 +73,9 @@ class ParamPanel(QGroupBox):
         h.addWidget(self.h_edit)
         self.custom_hint = QLabel("32 的倍数，512~4096，比例 ≤ 3:1")
         self.custom_hint.setStyleSheet("color: gray; font-size: 11px")
-        form.addRow("自定义", self.custom_row)
-        form.addRow("", self.custom_hint)
-        self.custom_row.hide()
-        self.custom_hint.hide()
+        form.addRow(self.custom_row)   # 跨两列，不带标签
+        form.addRow(self.custom_hint)
+        self._set_custom_visible(False)
 
         self.output_format = QComboBox()
         self.output_format.addItems([f.value for f in OutputFormat])
@@ -102,10 +101,12 @@ class ParamPanel(QGroupBox):
 
     # ---- 校验 -------------------------------------------------------------------
 
+    def _set_custom_visible(self, visible: bool) -> None:
+        for w in (self.custom_row, self.custom_hint):
+            w.setVisible(visible)
+
     def _on_size_changed(self) -> None:
-        custom = self.size.currentData() == CUSTOM
-        self.custom_row.setVisible(custom)
-        self.custom_hint.setVisible(custom)
+        self._set_custom_visible(self.size.currentData() == CUSTOM)
         self._revalidate()
 
     def size_value(self) -> str:

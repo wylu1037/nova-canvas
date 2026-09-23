@@ -14,7 +14,7 @@ class GenerateTab(QWidget):
         self.panel = ParamPanel("generate")
         self.panel.submitted.connect(self._on_submit)
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(0, 0, 0, 0)
+        lay.setContentsMargins(8, 8, 8, 8)
         lay.addWidget(self.panel)
         self._model = ""
 

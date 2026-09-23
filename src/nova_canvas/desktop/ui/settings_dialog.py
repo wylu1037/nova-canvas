@@ -24,9 +24,11 @@ class SettingsDialog(QDialog):
     def __init__(self, config: ConfigStore, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("设置")
-        self.setMinimumWidth(460)
+        self.setMinimumWidth(560)
         self._cfg = config
         form = QFormLayout(self)
+        # macOS 默认 FieldsStayAtSizeHint，输入框不随窗口拉伸
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
 
         key_row = QHBoxLayout()
         self.key = QLineEdit(config.api_key)
@@ -57,8 +59,7 @@ class SettingsDialog(QDialog):
         form.addRow("保存方式", save_row)
         warn = QLabel("⚠ 持久化会以明文写入本机配置（QSettings），请确保设备安全。")
         warn.setStyleSheet("color: #b58900; font-size: 11px")
-        warn.setWordWrap(True)
-        form.addRow("", warn)
+        form.addRow("", warn)  # 不换行；对话框最小宽度足以单行显示
 
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)
@@ -98,6 +99,8 @@ class SettingsDialog(QDialog):
 
         btns = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
+        btns.button(QDialogButtonBox.StandardButton.Save).setText("保存")
+        btns.button(QDialogButtonBox.StandardButton.Cancel).setText("取消")
         btns.accepted.connect(self._save)
         btns.rejected.connect(self.reject)
         form.addRow(btns)

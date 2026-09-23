@@ -3,6 +3,8 @@ name = "nova-canvas"
 version = "0.1.0"
 description = "NovaCanvas — 基于 SenseNova U1.5 的图片生成与编辑服务"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115",

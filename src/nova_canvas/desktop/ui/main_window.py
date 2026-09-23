@@ -2,12 +2,13 @@
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
     QComboBox,
-    QDockWidget,
+    QHBoxLayout,
     QLabel,
     QMainWindow,
     QPushButton,
     QSplitter,
-    QTabWidget,
+    QStackedWidget,
+    QTabBar,
     QToolBar,
     QVBoxLayout,
     QWidget,
@@ -24,6 +25,39 @@ from .image_canvas import ImageCanvas
 from .settings_dialog import SettingsDialog
 
 
+class SegmentedTabs(QWidget):
+    """独立 QTabBar（macOS 原生分段样式）+ QStackedWidget，没有 QTabWidget 的内容外框。"""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.bar = QTabBar()
+        self.bar.setExpanding(False)
+        self.bar.setDrawBase(False)
+        self.stack = QStackedWidget()
+        self.bar.currentChanged.connect(self.stack.setCurrentIndex)
+        bar_row = QHBoxLayout()
+        bar_row.addStretch()
+        bar_row.addWidget(self.bar)
+        bar_row.addStretch()
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(0, 0, 0, 0)
+        lay.addLayout(bar_row)
+        lay.addWidget(self.stack, 1)
+
+    def addTab(self, widget: QWidget, title: str) -> None:
+        self.stack.addWidget(widget)
+        self.bar.addTab(title)
+
+    def setCurrentWidget(self, widget: QWidget) -> None:
+        self.bar.setCurrentIndex(self.stack.indexOf(widget))
+
+    def count(self) -> int:
+        return self.bar.count()
+
+    def tabText(self, i: int) -> str:
+        return self.bar.tabText(i)
+
+
 class MainWindow(QMainWindow):
     def __init__(self, controller: AppController) -> None:
         super().__init__()
@@ -32,7 +66,6 @@ class MainWindow(QMainWindow):
         self.resize(1280, 800)
         self._build_toolbar()
         self._build_central()
-        self._build_history_dock()
         self._build_statusbar()
         self._wire()
         self._apply_defaults()
@@ -60,6 +93,9 @@ class MainWindow(QMainWindow):
             self.model_combo.addItem(m.value.replace("sensenova-", ""), m.value)
         tb.addWidget(self.model_combo)
         tb.addSeparator()
+        self.history_btn = QPushButton("历史记录")
+        self.history_btn.setCheckable(True)
+        tb.addWidget(self.history_btn)
         self.settings_btn = QPushButton("⚙ 设置")
         self.settings_btn.clicked.connect(self.open_settings)
         tb.addWidget(self.settings_btn)
@@ -71,19 +107,25 @@ class MainWindow(QMainWindow):
             "background: #fdecea; color: #b71c1c; padding: 6px; border: 1px solid #f5c6c2")
         self.banner.hide()
 
-        self.tabs = QTabWidget()
+        self.tabs = SegmentedTabs()
         self.generate_tab = GenerateTab()
         self.edit_tab = EditTab()
         self.tabs.addTab(self.generate_tab, "文生图")
         self.tabs.addTab(self.edit_tab, "编辑")
         self.canvas = ImageCanvas()
+        self.history = HistoryPanel()
 
         split = QSplitter(Qt.Orientation.Horizontal)
         split.addWidget(self.tabs)
         split.addWidget(self.canvas)
+        split.addWidget(self.history)
         split.setStretchFactor(0, 0)
         split.setStretchFactor(1, 1)
-        split.setSizes([420, 860])
+        split.setStretchFactor(2, 0)
+        split.setSizes([420, 620, 240])
+        # 工具栏"历史记录"按钮控制第三栏显隐
+        self.history_btn.setChecked(True)
+        self.history_btn.toggled.connect(self.history.setVisible)
 
         root = QWidget()
         lay = QVBoxLayout(root)
@@ -91,15 +133,6 @@ class MainWindow(QMainWindow):
         lay.addWidget(self.banner)
         lay.addWidget(split, 1)
         self.setCentralWidget(root)
-
-    def _build_history_dock(self) -> None:
-        self.history = HistoryPanel()
-        dock = QDockWidget("历史记录", self)
-        dock.setWidget(self.history)
-        dock.setMinimumWidth(200)
-        dock.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetClosable
-                         | QDockWidget.DockWidgetFeature.DockWidgetMovable)
-        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
 
     def _build_statusbar(self) -> None:
         sb = self.statusBar()

@@ -7,7 +7,10 @@ onedir 而非 onefile：PySide6 体积大，onefile 每次启动需解压，冷�
 """
 import sys
 
-from PySide6 import __file__ as _pyside_file  # noqa: F401 — 确保 PySide6 可导入
+# 这些名字由 PyInstaller 在执行 spec 时注入；显式导入让 IDE 静态检查能识别
+from PyInstaller.building.api import COLLECT, EXE, PYZ
+from PyInstaller.building.build_main import Analysis
+from PyInstaller.building.osx import BUNDLE
 
 APP_NAME = "NovaCanvas"
 ENTRY = "src/nova_canvas/desktop/main.py"
@@ -73,6 +76,6 @@ if sys.platform == "darwin":
             "CFBundleDisplayName": "NovaCanvas 图片工作台",
             "CFBundleShortVersionString": "0.1.0",
             "NSHighResolutionCapable": True,
-            # 允许非 HTTPS 以外的网络访问由系统默认策略决定；API 走 HTTPS 无需 ATS 例外
+            # API 走 HTTPS，无需配置 NSAppTransportSecurity 例外
         },
     )
