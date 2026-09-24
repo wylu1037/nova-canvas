@@ -224,14 +224,32 @@ curl -X POST http://127.0.0.1:8000/api/v1/images/generations \
 
 桌面端的默认参数（模型、尺寸、格式、水印、落盘目录）保存在 QSettings，可在设置对话框修改。
 
-## 📦 打包
+## 📦 打包与跨平台分发
+
+### 本地打包
 
 ```bash
 make build            # 产物：dist/NovaCanvas/，macOS 额外生成 dist/NovaCanvas.app
 ```
 
 - onedir 模式，冷启动快；已排除 WebEngine、Qml、Multimedia 等未使用的 Qt 模块及 Web 服务栈，体积约 120 MB
-- macOS 产物未签名，其他机器首次打开需右键"打开"；正式分发请自行 `codesign` + `notarytool`
+- macOS 产物未签名，其他机器首次打开需右键“打开”；正式分发请自行 `codesign` + `notarytool`
+
+### 跨平台 CI/CD 构建 (GitHub Actions)
+
+项目配置了完整的自动化构建流 [`.github/workflows/build.yml`](.github/workflows/build.yml)，支持：
+
+- **代码质量门禁**：在 Ubuntu 上快速执行 Ruff 语法检查与 Pytest 自动化测试
+- **多平台矩阵构建**：
+  | 平台 / 架构 | 运行环境 | 打包产物 | 说明 |
+  |---|---|---|---|
+  | **macOS (Apple Silicon)** | `macos-latest` (arm64) | `NovaCanvas-macos-arm64.dmg`<br>`NovaCanvas-macos-arm64.zip` | 挂载即用的 DMG 镜像与压缩包 |
+  | **macOS (Intel)** | `macos-13` (x86_64) | `NovaCanvas-macos-x86_64.dmg`<br>`NovaCanvas-macos-x86_64.zip` | 兼容旧款 Intel Mac 芯片 |
+  | **Windows** | `windows-latest` (x64) | `NovaCanvas-windows-x64.zip` | 解压双击 `NovaCanvas.exe` 即可使用 |
+  | **Linux** | `ubuntu-22.04` (x86_64) | `NovaCanvas-linux-x86_64.tar.gz` | 保留可执行权限，解压即运行 |
+- **构建物获取与发布**：
+  - **日常 PR / 分支推送 / 手动触发 (workflow_dispatch)**：构建产物自动保存于 Actions Artifacts 中（保留 14 天）。
+  - **版本发布 (Git Tag)**：推送版本标签（如 `git tag v0.1.0 && git push origin v0.1.0`）时，工作流自动聚合所有平台的二进制产物，创建 GitHub Release 并上传资产。
 
 ## 🧑‍💻 开发
 
