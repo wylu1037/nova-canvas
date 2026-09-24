@@ -88,9 +88,6 @@ jobs:
           # macOS Apple Silicon (M 系列)
           - os: macos-latest
             platform-name: macos-arm64
-          # macOS Intel (x86_64)
-          - os: macos-13
-            platform-name: macos-x86_64
           # Windows (x64)
           - os: windows-latest
             platform-name: windows-x64
@@ -177,13 +174,15 @@ jobs:
   release:
     name: Publish GitHub Release
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -194,10 +193,30 @@ jobs:
       - name: Display release assets
         run: ls -lh release-artifacts/
 
-      - name: Create GitHub Release
+      - name: Update latest tag for continuous release
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f latest
+          git push -f origin latest || true
+
+      - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'latest' }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ startsWith(github.ref, 'refs/tags/v') && format('Release {0}', github.ref_name) || 'NovaCanvas Latest Build' }}
+          body: |
+            NovaCanvas 跨平台桌面端最新构建产物（自动生成）。
+
+            - 🍏 **macOS (Apple Silicon)**: `NovaCanvas-macos-arm64.dmg` / `NovaCanvas-macos-arm64.zip`
+            - 🪟 **Windows (x64)**: `NovaCanvas-windows-x64.zip`
+            - 🐧 **Linux (x86_64)**: `NovaCanvas-linux-x86_64.tar.gz`
+
+            API Key 申请与注册请访问商汤日日新开放平台官网：[https://www.sensenova.cn](https://www.sensenova.cn)
           files: release-artifacts/*
-          generate_release_notes: true
+          generate_release_notes: ${{ startsWith(github.ref, 'refs/tags/v') }}
           draft: false
           prerelease: false
+          make_latest: true

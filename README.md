@@ -64,7 +64,6 @@ NovaCanvas 底层依托商汤 **SenseNova U1.5** 大模型提供视觉生成能�
 | 操作系统 | 下载文件 | 安装与使用说明 |
 |---|---|---|
 | **macOS (Apple Silicon)** | `NovaCanvas-macos-arm64.dmg`<br>`NovaCanvas-macos-arm64.zip` | 适用于 M1/M2/M3/M4 系列 Mac。双击打开 DMG 镜像，将 `NovaCanvas.app` 拖入 `Applications` 即可。 |
-| **macOS (Intel)** | `NovaCanvas-macos-x86_64.dmg`<br>`NovaCanvas-macos-x86_64.zip` | 适用于 Intel 芯片的老款 Mac 设备。 |
 | **Windows** | `NovaCanvas-windows-x64.zip` | 适用于 64 位 Windows 10/11。解压后进入目录，双击 `NovaCanvas.exe` 启动。 |
 | **Linux** | `NovaCanvas-linux-x86_64.tar.gz` | 适用于 Ubuntu / Debian / Fedora 等主流 Linux 发行版。解压后运行 `./NovaCanvas/NovaCanvas`。 |
 
@@ -286,10 +285,9 @@ make build            # 产物输出至 dist/NovaCanvas，macOS 环境自动生�
 - **自动化质量把控**：Ubuntu Runner 上严格执行 Ruff 代码规范检查与 Pytest 单元测试。
 - **全平台构建矩阵**：
   - 🍏 **macOS (Apple Silicon)**：编译生成 `NovaCanvas-macos-arm64.dmg` 与 `.zip`。
-  - 🍏 **macOS (Intel)**：编译生成 `NovaCanvas-macos-x86_64.dmg` 与 `.zip`。
   - 🪟 **Windows (x64)**：编译生成 `NovaCanvas-windows-x64.zip`。
   - 🐧 **Linux (x86_64)**：基于 Ubuntu 22.04 编译生成 `NovaCanvas-linux-x86_64.tar.gz`。
-- **Release 发布机制**：推送版本标签（例如 `git tag v0.1.0 && git push origin v0.1.0`）时，工作流自动聚合全平台产物并发布到 GitHub Releases。
+- **Release 发布机制**：Actions 构建成功后，自动聚合全平台产物并发布/更新到仓库的 GitHub Releases 页面，提供随时可直接下载的最新安装包。同时支持推送版本标签（例如 `git tag v0.1.0 && git push origin v0.1.0`）生成带版本号的正式 Release。
 
 ---
 
